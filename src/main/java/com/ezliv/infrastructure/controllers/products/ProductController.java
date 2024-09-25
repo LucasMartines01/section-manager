@@ -18,10 +18,12 @@ import java.util.List;
 public class ProductController {
     private final CreateProductsUseCase createProductsUseCase;
     private final GetProductsUseCase getProductsUseCase;
+    private final ProductUtils productUtils;
 
-    public ProductController(CreateProductsUseCase createProductsUseCase, GetProductsUseCase getProductsUseCase) {
+    public ProductController(CreateProductsUseCase createProductsUseCase, GetProductsUseCase getProductsUseCase, ProductUtils productUtils) {
         this.createProductsUseCase = createProductsUseCase;
         this.getProductsUseCase = getProductsUseCase;
+        this.productUtils = productUtils;
     }
 
     @GetMapping
@@ -38,7 +40,7 @@ public class ProductController {
 
     @PostMapping("/spreadsheet")
     public ResponseEntity<List<ProductResponseDTO>> createProductsFromSpreadsheet(@RequestBody DefaultBody<SpreadSheetDto> dto) {
-        List<Product> products = ProductUtils.getProductsFromSpreadSheet(dto.getData());
+        List<Product> products = productUtils.getProductsFromSpreadSheet(dto.getData()).join();
         List<Product> createdProducts = createProductsUseCase.execute(products);
         return ResponseEntity.ok(createdProducts.stream().map(ProductUtils::toDto).toList());
     }

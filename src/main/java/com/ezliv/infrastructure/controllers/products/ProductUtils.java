@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -54,8 +55,11 @@ public class ProductUtils {
         );
     }
 
-    public static List<Product> getProductsFromSpreadSheet(SpreadSheetDto dto) {
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    @Async
+    public CompletableFuture<List<Product>> getProductsFromSpreadSheet(SpreadSheetDto dto) {
+        ExecutorService executor = Executors.newFixedThreadPool(50);
+
+        return CompletableFuture.supplyAsync(() -> {
             byte[] decodedBytes = Base64.getDecoder().decode(dto.fileContentBase64());
 
             try (ByteArrayInputStream inputStream = new ByteArrayInputStream(decodedBytes);
@@ -70,7 +74,7 @@ public class ProductUtils {
                 List<CompletableFuture<List<Product>>> futures = new ArrayList<>();
 
                 for (int i = 0; i < totalChunks; i++) {
-                    CompletableFuture<List<Product>> futureChunk = convertSpreadSheetToProducts(sheet, CHUNK_SIZE, i * CHUNK_SIZE);
+                    CompletableFuture<List<Product>> futureChunk = convertSpreadSheetToProducts(sheet, CHUNK_SIZE, i * CHUNK_SIZE, executor);
                     futures.add(futureChunk);
                 }
 
@@ -87,11 +91,14 @@ public class ProductUtils {
 
             } catch (Exception e) {
                 throw new RuntimeException("Erro ao processar a planilha", e);
+            } finally {
+                executor.shutdown();
             }
-        }
+        }, executor);
     }
 
-    private static CompletableFuture<List<Product>> convertSpreadSheetToProducts(Sheet sheet, int chunkSize, int startRow) {
+    @Async
+    public CompletableFuture<List<Product>> convertSpreadSheetToProducts(Sheet sheet, int chunkSize, int startRow, ExecutorService executor) {
         return CompletableFuture.supplyAsync(() -> {
             List<Product> chunk = new ArrayList<>();
 
@@ -112,6 +119,6 @@ public class ProductUtils {
                 chunk.add(product);
             }
             return chunk;
-        });
+        }, executor);
     }
 }
