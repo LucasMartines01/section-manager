@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ProductUtils {
     @Value("${product.chunk-size}")
@@ -57,8 +55,6 @@ public class ProductUtils {
 
     @Async
     public CompletableFuture<List<Product>> getProductsFromSpreadSheet(SpreadSheetDto dto) {
-        ExecutorService executor = Executors.newFixedThreadPool(50);
-
         return CompletableFuture.supplyAsync(() -> {
             byte[] decodedBytes = Base64.getDecoder().decode(dto.fileContentBase64());
 
@@ -74,7 +70,7 @@ public class ProductUtils {
                 List<CompletableFuture<List<Product>>> futures = new ArrayList<>();
 
                 for (int i = 0; i < totalChunks; i++) {
-                    CompletableFuture<List<Product>> futureChunk = convertSpreadSheetToProducts(sheet, CHUNK_SIZE, i * CHUNK_SIZE, executor);
+                    CompletableFuture<List<Product>> futureChunk = convertSpreadSheetToProducts(sheet, CHUNK_SIZE, i * CHUNK_SIZE);
                     futures.add(futureChunk);
                 }
 
@@ -91,14 +87,12 @@ public class ProductUtils {
 
             } catch (Exception e) {
                 throw new RuntimeException("Erro ao processar a planilha", e);
-            } finally {
-                executor.shutdown();
             }
-        }, executor);
+        });
     }
 
     @Async
-    public CompletableFuture<List<Product>> convertSpreadSheetToProducts(Sheet sheet, int chunkSize, int startRow, ExecutorService executor) {
+    public CompletableFuture<List<Product>> convertSpreadSheetToProducts(Sheet sheet, int chunkSize, int startRow) {
         return CompletableFuture.supplyAsync(() -> {
             List<Product> chunk = new ArrayList<>();
 
@@ -119,6 +113,6 @@ public class ProductUtils {
                 chunk.add(product);
             }
             return chunk;
-        }, executor);
+        });
     }
 }
