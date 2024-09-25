@@ -41,6 +41,6 @@ public class ProductEntity {
         this.isLastUnits = product.getLastUnits();
         this.quantity = product.getQuantity();
         this.measure = product.getMeasure();
-        this.variations = product.getVariations().stream().map(VariationEntity::new).toList();
+
     }
 }

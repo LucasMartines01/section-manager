@@ -9,8 +9,8 @@ public class Product {
     private String description;
     private BigDecimal price;
     private BigDecimal promotionalPrice;
-    private Boolean isFavorite;
-    private Boolean isLastUnits;
+    private Boolean isFavorite = false;
+    private Boolean isLastUnits = false;
     private BigDecimal quantity;
     private String measure;
     private List<Variation> variations;
@@ -27,6 +27,8 @@ public class Product {
         this.measure = measure;
         this.variations = variations;
     }
+
+    public Product(){}
 
     public String getName() {
         return name;
@@ -68,4 +70,36 @@ public class Product {
         return variations;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public void setPromotionalPrice(BigDecimal promotionalPrice) {
+        this.promotionalPrice = promotionalPrice;
+    }
+
+
+    public void setQuantity(BigDecimal quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setMeasure(String measure) {
+        this.measure = measure;
+    }
+
+    public void setVariations(List<Variation> variations) {
+        this.variations = variations;
+    }
 }

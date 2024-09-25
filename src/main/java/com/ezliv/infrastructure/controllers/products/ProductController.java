@@ -7,6 +7,7 @@ import com.ezliv.domain.product.Product;
 import com.ezliv.infrastructure.controllers.DefaultBody;
 import com.ezliv.infrastructure.controllers.products.dtos.ProductRequestDTO;
 import com.ezliv.infrastructure.controllers.products.dtos.ProductResponseDTO;
+import com.ezliv.infrastructure.controllers.products.dtos.SpreadSheetDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +25,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getProducts() {
+    public ResponseEntity<DefaultBody<List<ProductResponseDTO>>> getProducts() {
         List<Product> products = getProductsUseCase.execute(new NoParams());
-        return ResponseEntity.ok(products.stream().map(ProductUtils::toDto).toList());
+        return ResponseEntity.ok(new DefaultBody<>(products.stream().map(ProductUtils::toDto).toList()));
     }
 
     @PostMapping
@@ -34,4 +35,12 @@ public class ProductController {
         List<Product> createdProducts = createProductsUseCase.execute(request.getData().stream().map(ProductUtils::toDomain).toList());
         return ResponseEntity.ok(createdProducts.stream().map(ProductUtils::toDto).toList());
     }
+
+    @PostMapping("/spreadsheet")
+    public ResponseEntity<List<ProductResponseDTO>> createProductsFromSpreadsheet(@RequestBody DefaultBody<SpreadSheetDto> dto) {
+        List<Product> products = ProductUtils.getProductsFromSpreadSheet(dto.getData());
+        List<Product> createdProducts = createProductsUseCase.execute(products);
+        return ResponseEntity.ok(createdProducts.stream().map(ProductUtils::toDto).toList());
+    }
+
 }
