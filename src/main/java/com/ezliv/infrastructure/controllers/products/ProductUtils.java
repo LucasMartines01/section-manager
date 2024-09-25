@@ -56,8 +56,6 @@ public class ProductUtils {
 
     public static List<Product> getProductsFromSpreadSheet(SpreadSheetDto dto) {
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-
-
             byte[] decodedBytes = Base64.getDecoder().decode(dto.fileContentBase64());
 
             try (ByteArrayInputStream inputStream = new ByteArrayInputStream(decodedBytes);
@@ -66,14 +64,13 @@ public class ProductUtils {
                 Sheet sheet = workbook.getSheetAt(0);
                 int totalRows = sheet.getPhysicalNumberOfRows();
 
-                int chunkSize = 100;
 
-                int totalChunks = (int) Math.ceil((double) totalRows / chunkSize);
+                int totalChunks = (int) Math.ceil((double) totalRows / CHUNK_SIZE);
 
                 List<CompletableFuture<List<Product>>> futures = new ArrayList<>();
 
                 for (int i = 0; i < totalChunks; i++) {
-                    CompletableFuture<List<Product>> futureChunk = convertSpreadSheetToProducts(sheet, chunkSize, i * chunkSize);
+                    CompletableFuture<List<Product>> futureChunk = convertSpreadSheetToProducts(sheet, CHUNK_SIZE, i * CHUNK_SIZE);
                     futures.add(futureChunk);
                 }
 
