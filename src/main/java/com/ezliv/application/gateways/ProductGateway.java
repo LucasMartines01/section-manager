@@ -1,7 +1,5 @@
 package com.ezliv.application.gateways;
-
 import com.ezliv.domain.product.Product;
-
 import java.util.List;
 
 public interface ProductGateway {
